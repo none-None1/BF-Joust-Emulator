@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+    <head><title>BF Joust Simulator</title></head>
+    <body>
+        <p>
+            This is a BF Joust simulator, it allows you to try out BF Joust without uploading them anywhere.
+
+            Add several programs, and click Compete.
+
+            The simulator will show a table that shows the score of each match between the programs, from +42 to -42. It doesn't have animations and nor does it calculate the total score of each program.
+        </p>
+        <div id="programs">
+            Programs:
+        </div>
+        <input id="name">
+        <br>
+        <textarea id="code" cols=80 rows="30"></textarea>
+        <script>
+            if(typeof(Worker)==="undefined"){
+                alert('BF Joust Simulator requires web workers to work correctly');
+            }
+            programs=[];
+            function add_program(){
+                name=document.getElementById('name').value;
+                prog=document.getElementById('code').value;
+                programs.push({name:name,prog:prog});
+                document.getElementById('programs').innerText+='\n'+name;
+            }
+            function compete(){
+                k=[];
+                restbl=document.getElementById('restbl');
+                restbl.innerHTML='';
+                kkk='<thead><tr><td>left\\left score\\right</td>';
+                for(let i=0;i<programs.length;i++) kkk+=`<td>${programs[i].name}</td>`;
+                kkk+='</tr></thead><tbody>';
+                for(let i=0;i<programs.length;i++){
+                    kkk+=`<tr><td>${programs[i].name}</td>`;
+                    for(let j=0;j<programs.length;j++){
+                        kkk+=`<td id="${i}_${j}"></td>`;
+                    }
+                    kkk+='</tr>'
+                }
+                restbl.innerHTML+=kkk;
+                for(let i=0;i<programs.length;i++){
+                    for(let j=i+1;j<programs.length;j++){
+                        k.push([i,j]);
+                    }
+                }
+                while(k.length){
+                    a=k.pop();
+                    b=k.pop();
+                    c=k.pop();
+                    if(a){
+                        w=new Worker('./worker.js');
+                        w.postMessage({x:programs[a[0]].prog,y:programs[a[1]].prog,i:a[0],j:a[1]});
+                        w.onmessage=function(e){
+                            document.getElementById(`${e.data.i}_${e.data.j}`).innerHTML=(e.data.score>0?'+'+e.data.score:e.data.score);
+                            document.getElementById(`${e.data.j}_${e.data.i}`).innerHTML=((-e.data.score)>0?'+'+(-e.data.score):-e.data.score);
+                            document.getElementById(`${e.data.j}_${e.data.i}`).style.backgroundColor=`rgb(${Math.floor((e.data.score+42)/84*255)},${255-Math.floor((e.data.score+42)/84*255)},0)`;
+                            document.getElementById(`${e.data.i}_${e.data.j}`).style.backgroundColor=`rgb(${255-Math.floor((e.data.score+42)/84*255)},${Math.floor((e.data.score+42)/84*255)},0)`;
+                            this.terminate();
+                        }
+                    }
+                    if(b){
+                        w=new Worker('./worker.js');
+                        w.postMessage({x:programs[b[0]].prog,y:programs[b[1]].prog,i:b[0],j:b[1]});
+                        w.onmessage=function(e){
+                            document.getElementById(`${e.data.i}_${e.data.j}`).innerHTML=(e.data.score>0?'+'+e.data.score:e.data.score);
+                            document.getElementById(`${e.data.j}_${e.data.i}`).innerHTML=((-e.data.score)>0?'+'+(-e.data.score):-e.data.score);
+                            document.getElementById(`${e.data.j}_${e.data.i}`).style.backgroundColor=`rgb(${Math.floor((e.data.score+42)/84*255)},${255-Math.floor((e.data.score+42)/84*255)},0)`;
+                            document.getElementById(`${e.data.i}_${e.data.j}`).style.backgroundColor=`rgb(${255-Math.floor((e.data.score+42)/84*255)},${Math.floor((e.data.score+42)/84*255)},0)`;
+                            this.terminate();
+                        }
+                    }
+                    if(c){
+                        w=new Worker('./worker.js');
+                        w.postMessage({x:programs[c[0]].prog,y:programs[c[1]].prog,i:c[0],j:c[1]});
+                        w.onmessage=function(e){
+                            document.getElementById(`${e.data.i}_${e.data.j}`).innerHTML=(e.data.score>0?'+'+e.data.score:e.data.score);
+                            document.getElementById(`${e.data.j}_${e.data.i}`).innerHTML=((-e.data.score)>0?'+'+(-e.data.score):-e.data.score);
+                            document.getElementById(`${e.data.j}_${e.data.i}`).style.backgroundColor=`rgb(${Math.floor((e.data.score+42)/84*255)},${255-Math.floor((e.data.score+42)/84*255)},0)`;
+                            document.getElementById(`${e.data.i}_${e.data.j}`).style.backgroundColor=`rgb(${255-Math.floor((e.data.score+42)/84*255)},${Math.floor((e.data.score+42)/84*255)},0)`;
+                            this.terminate();
+                        }
+                    }
+                }
+            }
+            function clear_programs(){
+                window.programs=[];
+                document.getElementById('programs').innerText='Programs:';
+            }
+        </script>
+        <table id="restbl" border="1">
+
+        </table>
+        <button onclick="add_program()">Add program</button>
+        <button onclick="clear_programs()">Clear programs</button>
+        <button onclick="compete()">Compete!</button>
+    </body>
+</html>
