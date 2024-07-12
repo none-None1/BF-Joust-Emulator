@@ -1,105 +1,426 @@
 <!DOCTYPE html>
 <html>
-    <head><title>BF Joust Simulator</title></head>
-    <body>
-        <p>
-            This is a BF Joust simulator, it allows you to try out BF Joust without uploading anything anywhere.
-
-            Add several programs and program names, and click Compete.
-
-            The simulator will show a table that shows the score of each match between the programs, from +42 to -42. It doesn't have animations and nor does it calculate the total score of each program.
-        </p>
-        <hr>
-        <div id="programs">
-            Programs:
-        </div>
-        <hr>
-        Program name: <input id="name">
-        <hr>
-        <br>
-        Code: 
-        <br>
-        <textarea id="code" cols=80 rows="30"></textarea>
-        <script>
-            if(typeof(Worker)==="undefined"){
-                alert('BF Joust Simulator requires web workers to work correctly');
-            }
-            programs=[];
-            function add_program(){
-                name=document.getElementById('name').value;
-                prog=document.getElementById('code').value;
-                programs.push({name:name,prog:prog});
-                document.getElementById('programs').innerText+='\n'+name;
-            }
-            function compete(){
-                k=[];
-                restbl=document.getElementById('restbl');
-                restbl.innerHTML='';
-                kkk='<thead><tr><td>left\\left score\\right</td>';
-                for(let i=0;i<programs.length;i++) kkk+=`<td>${programs[i].name}</td>`;
-                kkk+='</tr></thead><tbody>';
-                for(let i=0;i<programs.length;i++){
-                    kkk+=`<tr><td>${programs[i].name}</td>`;
-                    for(let j=0;j<programs.length;j++){
-                        kkk+=`<td id="${i}_${j}"></td>`;
-                    }
-                    kkk+='</tr>'
+  <head>
+    <title>BF Joust Simulator</title>
+  </head>
+  <body>
+    <p>
+      This is a
+      <a href="https://esolangs.org/wiki/BF_Joust">BF Joust</a> simulator, it
+      allows you to try out BF Joust without uploading anything anywhere. Add
+      several programs and program names, and click Compete. The simulator will
+      show a table that shows the score of each match between the programs, from
+      +42 to -42. It doesn't have animations and nor does it calculate the total
+      score of each program.
+    </p>
+    <hr />
+    <div id="programs">Programs (Hover to view a program):</div>
+    <code id="view"></code>
+    <hr />
+    Program name: <input id="name" />
+    <hr />
+    <br />
+    Code:
+    <br />
+    <textarea id="code" cols="80" rows="30"></textarea>
+    <script>
+      if (typeof Worker === "undefined") {
+        alert("BF Joust Simulator requires web workers to work correctly");
+      }
+      programs = [];
+      function getcolor(x) {
+        red = Math.floor(((x + 42) / 84) * 255);
+        green = 255 - Math.floor(((x + 42) / 84) * 255);
+        if (red < green) return `rgb(${Math.floor((255 * red) / green)},255,0)`;
+        return `rgb(255,${Math.floor((255 * green) / red)},0)`;
+      }
+      function add_program() {
+        name = document.getElementById("name").value;
+        prog = document.getElementById("code").value;
+        programs.push({ name: name, prog: prog });
+        b = document.createElement("div");
+        document.getElementById("programs").appendChild(b);
+        b.innerText = name;
+        var u = programs.length - 1;
+        b.addEventListener("mouseover", (e) => {
+          document.getElementById("view").innerText = programs[u].prog;
+        });
+        b.addEventListener("mouseout", (e) => {
+          document.getElementById("view").innerText = "";
+        });
+      }
+      function compete() {
+        k = [];
+        window.results={};
+        restbl = document.getElementById("restbl");
+        restbl.innerHTML = "";
+        kkk = "<thead><tr><td>left\\left score\\right</td>";
+        for (let i = 0; i < programs.length; i++)
+          kkk += `<td>${programs[i].name}</td>`;
+        kkk += "</tr></thead><tbody>";
+        for (let i = 0; i < programs.length; i++) {
+          kkk += `<tr><td>${programs[i].name}</td>`;
+          for (let j = 0; j < programs.length; j++) {
+            kkk += `<td id="${i}_${j}"></td>`;
+          }
+          kkk += "</tr>";
+        }
+        restbl.innerHTML += kkk;
+        for (let i = 0; i < programs.length; i++) {
+          for (let j = i + 1; j < programs.length; j++) {
+            k.push([i, j]);
+          }
+        }
+        wa = new Worker("./worker.js");
+        wb = new Worker("./worker.js");
+        wc = new Worker("./worker.js");
+        ra = [];
+        rb = [];
+        rc = [];
+        while (k.length) {
+          a = k.pop();
+          b = k.pop();
+          c = k.pop();
+          if (a)
+            ra.push({
+              x: programs[a[0]].prog,
+              y: programs[a[1]].prog,
+              i: a[0],
+              j: a[1],
+            });
+          if (b)
+            rb.push({
+              x: programs[b[0]].prog,
+              y: programs[b[1]].prog,
+              i: b[0],
+              j: b[1],
+            });
+          if (c)
+            rc.push({
+              x: programs[c[0]].prog,
+              y: programs[c[1]].prog,
+              i: c[0],
+              j: c[1],
+            });
+        }
+        wc.onmessage =
+          wb.onmessage =
+          wa.onmessage =
+            function (e) {
+              document.getElementById(`${e.data.i}_${e.data.j}`).innerHTML =
+                e.data.score > 0 ? "+" + e.data.score : e.data.score;
+              document.getElementById(`${e.data.j}_${e.data.i}`).innerHTML =
+                -e.data.score > 0 ? "+" + -e.data.score : -e.data.score;
+              document.getElementById(
+                `${e.data.j}_${e.data.i}`
+              ).style.backgroundColor = getcolor(e.data.score);
+              document.getElementById(
+                `${e.data.i}_${e.data.j}`
+              ).style.backgroundColor = getcolor(-e.data.score);
+              results[`${e.data.i},${e.data.j}`]=[];
+              for(let i=10;i<=30;i++){
+                results[`${e.data.i},${e.data.j}`].push(e.data[i]);
+              }
+              for(let i=-10;i>=-30;i--){
+                results[`${e.data.i},${e.data.j}`].push(e.data[i]);
+              }
+              var xxx=e.data.i;
+              var yyy=e.data.j;
+              var eventf=function(e){
+                document.getElementById('vs').innerText=`${programs[xxx].name} vs ${programs[yyy].name}`;
+                for(let i=0;i<42;i++){
+                    if(results[`${xxx},${yyy}`][i].state=='X') document.getElementById(`state_${i}`).innerText=`${programs[yyy].name} wins`;
+                    else if(results[`${xxx},${yyy}`][i].state=='Y') document.getElementById(`state_${i}`).innerText=`${programs[xxx].name} wins`;
+                    else document.getElementById(`state_${i}`).innerText='tie';
+                    document.getElementById(`reason_${i}`).innerText=results[`${xxx},${yyy}`][i].reason;
                 }
-                restbl.innerHTML+=kkk;
-                for(let i=0;i<programs.length;i++){
-                    for(let j=i+1;j<programs.length;j++){
-                        k.push([i,j]);
-                    }
-                }
-                while(k.length){
-                    a=k.pop();
-                    b=k.pop();
-                    c=k.pop();
-                    if(a){
-                        w=new Worker('./worker.js');
-                        w.postMessage({x:programs[a[0]].prog,y:programs[a[1]].prog,i:a[0],j:a[1]});
-                        w.onmessage=function(e){
-                            document.getElementById(`${e.data.i}_${e.data.j}`).innerHTML=(e.data.score>0?'+'+e.data.score:e.data.score);
-                            document.getElementById(`${e.data.j}_${e.data.i}`).innerHTML=((-e.data.score)>0?'+'+(-e.data.score):-e.data.score);
-                            document.getElementById(`${e.data.j}_${e.data.i}`).style.backgroundColor=`rgb(${Math.floor((e.data.score+42)/84*255)},${255-Math.floor((e.data.score+42)/84*255)},0)`;
-                            document.getElementById(`${e.data.i}_${e.data.j}`).style.backgroundColor=`rgb(${255-Math.floor((e.data.score+42)/84*255)},${Math.floor((e.data.score+42)/84*255)},0)`;
-                            this.terminate();
-                        }
-                    }
-                    if(b){
-                        w=new Worker('./worker.js');
-                        w.postMessage({x:programs[b[0]].prog,y:programs[b[1]].prog,i:b[0],j:b[1]});
-                        w.onmessage=function(e){
-                            document.getElementById(`${e.data.i}_${e.data.j}`).innerHTML=(e.data.score>0?'+'+e.data.score:e.data.score);
-                            document.getElementById(`${e.data.j}_${e.data.i}`).innerHTML=((-e.data.score)>0?'+'+(-e.data.score):-e.data.score);
-                            document.getElementById(`${e.data.j}_${e.data.i}`).style.backgroundColor=`rgb(${Math.floor((e.data.score+42)/84*255)},${255-Math.floor((e.data.score+42)/84*255)},0)`;
-                            document.getElementById(`${e.data.i}_${e.data.j}`).style.backgroundColor=`rgb(${255-Math.floor((e.data.score+42)/84*255)},${Math.floor((e.data.score+42)/84*255)},0)`;
-                            this.terminate();
-                        }
-                    }
-                    if(c){
-                        w=new Worker('./worker.js');
-                        w.postMessage({x:programs[c[0]].prog,y:programs[c[1]].prog,i:c[0],j:c[1]});
-                        w.onmessage=function(e){
-                            document.getElementById(`${e.data.i}_${e.data.j}`).innerHTML=(e.data.score>0?'+'+e.data.score:e.data.score);
-                            document.getElementById(`${e.data.j}_${e.data.i}`).innerHTML=((-e.data.score)>0?'+'+(-e.data.score):-e.data.score);
-                            document.getElementById(`${e.data.j}_${e.data.i}`).style.backgroundColor=`rgb(${Math.floor((e.data.score+42)/84*255)},${255-Math.floor((e.data.score+42)/84*255)},0)`;
-                            document.getElementById(`${e.data.i}_${e.data.j}`).style.backgroundColor=`rgb(${255-Math.floor((e.data.score+42)/84*255)},${Math.floor((e.data.score+42)/84*255)},0)`;
-                            this.terminate();
-                        }
-                    }
-                }
-            }
-            function clear_programs(){
-                window.programs=[];
-                document.getElementById('programs').innerText='Programs:';
-            }
-        </script>
-        <table id="restbl" border="1">
-
-        </table>
-        <button onclick="add_program()">Add program</button>
-        <button onclick="clear_programs()">Clear programs</button>
-        <button onclick="compete()">Compete!</button>
-    </body>
+              }
+              document.getElementById(`${e.data.i}_${e.data.j}`).addEventListener('mouseover',eventf);
+              document.getElementById(`${e.data.j}_${e.data.i}`).addEventListener('mouseover',eventf);
+              if (e.data.stop) this.terminate();
+            };
+        wa.postMessage(ra);
+        wb.postMessage(rb);
+        wc.postMessage(rc);
+      }
+      function clear_programs() {
+        window.programs = [];
+        document.getElementById("programs").innerHTML =
+          "Programs (Hover to view a program): ";
+        document.getElementById("restbl").innerHTML = "";
+      }
+    </script>
+    <button onclick="add_program()">Add program</button>
+    <button onclick="clear_programs()">Clear programs</button>
+    <button onclick="compete()">Compete!</button>
+    <h3>Result</h3>
+    <table id="restbl" border="1"></table>
+    <h3>Details</h3>
+    <div id="vs"></div>
+    <table id="detail" border="1">
+      <thead>
+        <tr>
+          <td>Tape length</td>
+          <td>Switched</td>
+          <td>Result</td>
+          <td>Reason</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>10</td>
+          <td>No</td>
+          <td id="state_0"></td>
+          <td id="reason_0"></td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td>No</td>
+          <td id="state_1"></td>
+          <td id="reason_1"></td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td>No</td>
+          <td id="state_2"></td>
+          <td id="reason_2"></td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td>No</td>
+          <td id="state_3"></td>
+          <td id="reason_3"></td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td>No</td>
+          <td id="state_4"></td>
+          <td id="reason_4"></td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td>No</td>
+          <td id="state_5"></td>
+          <td id="reason_5"></td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td>No</td>
+          <td id="state_6"></td>
+          <td id="reason_6"></td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td>No</td>
+          <td id="state_7"></td>
+          <td id="reason_7"></td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td>No</td>
+          <td id="state_8"></td>
+          <td id="reason_8"></td>
+        </tr>
+        <tr>
+          <td>19</td>
+          <td>No</td>
+          <td id="state_9"></td>
+          <td id="reason_9"></td>
+        </tr>
+        <tr>
+          <td>20</td>
+          <td>No</td>
+          <td id="state_10"></td>
+          <td id="reason_10"></td>
+        </tr>
+        <tr>
+          <td>21</td>
+          <td>No</td>
+          <td id="state_11"></td>
+          <td id="reason_11"></td>
+        </tr>
+        <tr>
+          <td>22</td>
+          <td>No</td>
+          <td id="state_12"></td>
+          <td id="reason_12"></td>
+        </tr>
+        <tr>
+          <td>23</td>
+          <td>No</td>
+          <td id="state_13"></td>
+          <td id="reason_13"></td>
+        </tr>
+        <tr>
+          <td>24</td>
+          <td>No</td>
+          <td id="state_14"></td>
+          <td id="reason_14"></td>
+        </tr>
+        <tr>
+          <td>25</td>
+          <td>No</td>
+          <td id="state_15"></td>
+          <td id="reason_15"></td>
+        </tr>
+        <tr>
+          <td>26</td>
+          <td>No</td>
+          <td id="state_16"></td>
+          <td id="reason_16"></td>
+        </tr>
+        <tr>
+          <td>27</td>
+          <td>No</td>
+          <td id="state_17"></td>
+          <td id="reason_17"></td>
+        </tr>
+        <tr>
+          <td>28</td>
+          <td>No</td>
+          <td id="state_18"></td>
+          <td id="reason_18"></td>
+        </tr>
+        <tr>
+          <td>29</td>
+          <td>No</td>
+          <td id="state_19"></td>
+          <td id="reason_19"></td>
+        </tr>
+        <tr>
+          <td>30</td>
+          <td>No</td>
+          <td id="state_20"></td>
+          <td id="reason_20"></td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>Yes</td>
+          <td id="state_21"></td>
+          <td id="reason_21"></td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td>Yes</td>
+          <td id="state_22"></td>
+          <td id="reason_22"></td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td>Yes</td>
+          <td id="state_23"></td>
+          <td id="reason_23"></td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td>Yes</td>
+          <td id="state_24"></td>
+          <td id="reason_24"></td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td>Yes</td>
+          <td id="state_25"></td>
+          <td id="reason_25"></td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td>Yes</td>
+          <td id="state_26"></td>
+          <td id="reason_26"></td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td>Yes</td>
+          <td id="state_27"></td>
+          <td id="reason_27"></td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td>Yes</td>
+          <td id="state_28"></td>
+          <td id="reason_28"></td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td>Yes</td>
+          <td id="state_29"></td>
+          <td id="reason_29"></td>
+        </tr>
+        <tr>
+          <td>19</td>
+          <td>Yes</td>
+          <td id="state_30"></td>
+          <td id="reason_30"></td>
+        </tr>
+        <tr>
+          <td>20</td>
+          <td>Yes</td>
+          <td id="state_31"></td>
+          <td id="reason_31"></td>
+        </tr>
+        <tr>
+          <td>21</td>
+          <td>Yes</td>
+          <td id="state_32"></td>
+          <td id="reason_32"></td>
+        </tr>
+        <tr>
+          <td>22</td>
+          <td>Yes</td>
+          <td id="state_33"></td>
+          <td id="reason_33"></td>
+        </tr>
+        <tr>
+          <td>23</td>
+          <td>Yes</td>
+          <td id="state_34"></td>
+          <td id="reason_34"></td>
+        </tr>
+        <tr>
+          <td>24</td>
+          <td>Yes</td>
+          <td id="state_35"></td>
+          <td id="reason_35"></td>
+        </tr>
+        <tr>
+          <td>25</td>
+          <td>Yes</td>
+          <td id="state_36"></td>
+          <td id="reason_36"></td>
+        </tr>
+        <tr>
+          <td>26</td>
+          <td>Yes</td>
+          <td id="state_37"></td>
+          <td id="reason_37"></td>
+        </tr>
+        <tr>
+          <td>27</td>
+          <td>Yes</td>
+          <td id="state_38"></td>
+          <td id="reason_38"></td>
+        </tr>
+        <tr>
+          <td>28</td>
+          <td>Yes</td>
+          <td id="state_39"></td>
+          <td id="reason_39"></td>
+        </tr>
+        <tr>
+          <td>29</td>
+          <td>Yes</td>
+          <td id="state_40"></td>
+          <td id="reason_40"></td>
+        </tr>
+        <tr>
+          <td>30</td>
+          <td>Yes</td>
+          <td id="state_41"></td>
+          <td id="reason_41"></td>
+        </tr>
+      </tbody>
+      <tbody></tbody>
+    </table>
+  </body>
 </html>

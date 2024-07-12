@@ -1,18 +1,24 @@
 importScripts('./run.js')
 self.onmessage=function(event){
-    d=event.data;
-    z={i:d.i,j:d.j};
-    score=0;
-    for(let i=10;i<=30;i++){
-        z[i]=bfjoust(d.x,d.y,i,0);
-        if(z[i].state=='X') score--;
-        if(z[i].state=='Y') score++;
+    dd=event.data;
+    cnt=0;
+    for(let d of dd){
+        ppp={i:d.i,j:d.j,stop:(cnt==dd.length-1)};
+        score=0;
+        d.x=preproc(d.x);
+        d.y=preproc(d.y);
+        for(let i=10;i<=30;i++){
+            ppp[i]=bfjoust(d.x,d.y,i,0);
+            if(ppp[i].state=='X') score--;
+            if(ppp[i].state=='Y') score++;
+        }
+        for(let i=10;i<=30;i++){
+            ppp[-i]=bfjoust(d.x,d.y,i,1);
+            if(ppp[-i].state=='X') score--;
+            if(ppp[-i].state=='Y') score++;
+        }
+        ppp.score=score;
+        self.postMessage(ppp);
+        cnt++;
     }
-    for(let i=10;i<=30;i++){
-        z[-i]=bfjoust(d.x,d.y,i,1);
-        if(z[-i].state=='X') score--;
-        if(z[-i].state=='Y') score++;
-    }
-    z.score=score;
-    self.postMessage(z);
 }

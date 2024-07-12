@@ -1,18 +1,19 @@
 function expand(x){
     stack=[];
     id=0;
+    res='';
     for(let i of x){
         if(i=='('){
             stack.push(id);
         }
-        if(i==')'){
+        else if(i==')'){
             k=stack.pop();
             if(!stack.length){
                 if(x[id+1]=='*'){
                     w=parseInt(x.slice(id+2));
                     r=''
                     for(let j=0;j<w;j++) r+=x.slice(k+1,id);
-                    return x.slice(0,k)+r+x.slice(id+1);
+                    res+=r;
                 }else{
                     w=parseInt(x.slice(id+2));
                     z=x.slice(k+1,id);
@@ -20,17 +21,23 @@ function expand(x){
                     for(let j=0;j<w;j++) r+=z.slice(0,z.indexOf('{'));
                     r+=z.slice(z.indexOf('{')+1,z.lastIndexOf('}'));
                     for(let j=0;j<w;j++) r+=z.slice(z.lastIndexOf('}')+1);
-                    return x.slice(0,k)+r+x.slice(id+1);
+                    res+=r;
                 }
+            }
+        }else{
+            if(!stack.length){
+                res+=i;
             }
         }
         id++;
     }
-    return x;
+    return res;
 }
 function preproc(bf){
+    c=0;
     while(expand(bf)!=bf){
         bf=expand(bf);
+        c++;
     }
     r=''
     for(let i of bf){
@@ -41,8 +48,6 @@ function preproc(bf){
     return r;
 }
 function bfjoust(x,y,tapesize,switched){
-    x=preproc(x);
-    y=preproc(y);
     tape=[]
     for(let i=0;i<tapesize;i++) tape.push(0);
     stack=[];
