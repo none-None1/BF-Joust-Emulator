@@ -16,6 +16,7 @@
     </p>
     <hr />
     <div id="programs">Programs (Hover to view a program):</div>
+    <hr />
     <code id="view"></code>
     <hr />
     Program name: <input id="name" />
@@ -39,20 +40,20 @@
         name = document.getElementById("name").value;
         prog = document.getElementById("code").value;
         programs.push({ name: name, prog: prog });
-        b = document.createElement("div");
+        document
+          .getElementById("programs")
+          .appendChild(document.createElement("br"));
+        b = document.createElement("code");
         document.getElementById("programs").appendChild(b);
         b.innerText = name;
         var u = programs.length - 1;
         b.addEventListener("mouseover", (e) => {
           document.getElementById("view").innerText = programs[u].prog;
         });
-        b.addEventListener("mouseout", (e) => {
-          document.getElementById("view").innerText = "";
-        });
       }
       function compete() {
         k = [];
-        window.results={};
+        window.results = {};
         restbl = document.getElementById("restbl");
         restbl.innerHTML = "";
         kkk = "<thead><tr><td>left\\left score\\right</td>";
@@ -118,26 +119,39 @@
               document.getElementById(
                 `${e.data.i}_${e.data.j}`
               ).style.backgroundColor = getcolor(-e.data.score);
-              results[`${e.data.i},${e.data.j}`]=[];
-              for(let i=10;i<=30;i++){
+              results[`${e.data.i},${e.data.j}`] = [];
+              for (let i = 10; i <= 30; i++) {
                 results[`${e.data.i},${e.data.j}`].push(e.data[i]);
               }
-              for(let i=-10;i>=-30;i--){
+              for (let i = -10; i >= -30; i--) {
                 results[`${e.data.i},${e.data.j}`].push(e.data[i]);
               }
-              var xxx=e.data.i;
-              var yyy=e.data.j;
-              var eventf=function(e){
-                document.getElementById('vs').innerText=`${programs[xxx].name} vs ${programs[yyy].name}`;
-                for(let i=0;i<42;i++){
-                    if(results[`${xxx},${yyy}`][i].state=='X') document.getElementById(`state_${i}`).innerText=`${programs[yyy].name} wins`;
-                    else if(results[`${xxx},${yyy}`][i].state=='Y') document.getElementById(`state_${i}`).innerText=`${programs[xxx].name} wins`;
-                    else document.getElementById(`state_${i}`).innerText='tie';
-                    document.getElementById(`reason_${i}`).innerText=results[`${xxx},${yyy}`][i].reason;
+              var xxx = e.data.i;
+              var yyy = e.data.j;
+              var eventf = function (e) {
+                document.getElementById(
+                  "vs"
+                ).innerText = `${programs[xxx].name} vs ${programs[yyy].name}`;
+                for (let i = 0; i < 42; i++) {
+                  if (results[`${xxx},${yyy}`][i].state == "X")
+                    document.getElementById(
+                      `state_${i}`
+                    ).innerText = `${programs[yyy].name} wins`;
+                  else if (results[`${xxx},${yyy}`][i].state == "Y")
+                    document.getElementById(
+                      `state_${i}`
+                    ).innerText = `${programs[xxx].name} wins`;
+                  else document.getElementById(`state_${i}`).innerText = "tie";
+                  document.getElementById(`reason_${i}`).innerText =
+                    results[`${xxx},${yyy}`][i].reason;
                 }
-              }
-              document.getElementById(`${e.data.i}_${e.data.j}`).addEventListener('mouseover',eventf);
-              document.getElementById(`${e.data.j}_${e.data.i}`).addEventListener('mouseover',eventf);
+              };
+              document
+                .getElementById(`${e.data.i}_${e.data.j}`)
+                .addEventListener("mouseover", eventf);
+              document
+                .getElementById(`${e.data.j}_${e.data.i}`)
+                .addEventListener("mouseover", eventf);
               if (e.data.stop) this.terminate();
             };
         wa.postMessage(ra);
