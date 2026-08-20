@@ -1,4 +1,21 @@
 importScripts("./run.js");
+importScripts("./parse.js");
+function preproc(x){
+    t=parsetree(x);
+    while(1){
+        u=walk(t);
+        if(u.num!=u.num)break;
+        reduce(u);
+    }
+    t=t.join('');
+    r="";
+    for(let i of t){
+        if ("+-.<>[]".includes(i)){
+            r+=i;
+        }
+    }
+    return r;
+}
 self.onmessage = function (event) {
   dd = event.data;
   cnt = 0;
