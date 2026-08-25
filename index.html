@@ -1,18 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>BF Joust Emulator</title>
+    <style>
+      .program-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .clickable-text {
+        width: auto;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: blue;
+        text-decoration: underline;
+        cursor: pointer;
+        font: inherit;
+      }
+    </style>
   </head>
   <body>
-    <h1>BF Joust Emulator 1.0</h1>
+    <h1>BF Joust Emulator 1.1</h1>
     <p>
       This is a
-      <a href="https://esolangs.org/wiki/BF_Joust">BF Joust</a> simulator, it
+      <a href="https://esolangs.org/wiki/BF_Joust">BF Joust</a> emulator, it
       allows you to try out BF Joust without uploading anything anywhere. Add
-      several programs and program names, and click Compete. The simulator will
+      several programs and program names, and click Compete. The emulator will
       show a table that shows the score of each match between the programs, from
-      +42 to -42. It doesn't have animations and nor does it calculate the total
-      score of each program.
+      +42 to -42. It doesn't have animations (yet).
+      <br />
+      <strong>Note:</strong> Programs must strictly follow
+      <a href="https://esolangs.org/wiki/BF_Joust#Latest_changes"
+        >the latest BF Joust expanding rules</a
+      >, otherwise the results may be incorrect. The emulator will not check for
+      this.
     </p>
     <hr />
     <div id="programs">Programs (Hover to view a program):</div>
@@ -37,19 +59,35 @@
         return `rgb(255,${Math.floor((255 * green) / red)},0)`;
       }
       function add_program() {
+        for (let i of programs) {
+          if (i.name == document.getElementById("name").value) {
+            alert(
+              `Program name '${document.getElementById("name").value}' already exists`,
+            );
+            return;
+          }
+        }
         name = document.getElementById("name").value;
         prog = document.getElementById("code").value;
         programs.push({ name: name, prog: prog });
-        document
-          .getElementById("programs")
-          .appendChild(document.createElement("br"));
         b = document.createElement("code");
-        document.getElementById("programs").appendChild(b);
         b.innerText = name;
         var u = programs.length - 1;
         b.addEventListener("mouseover", (e) => {
           document.getElementById("view").innerText = programs[u].prog;
         });
+        btn = document.createElement("button");
+        btn.className = "clickable-text";
+        btn.innerHTML = "<code>Delete</code>";
+        btn.addEventListener("click", () => {
+          programs.splice(u, 1);
+          row.remove();
+        });
+        const row = document.createElement("div");
+        row.className = "program-row";
+        row.appendChild(b);
+        row.appendChild(btn);
+        document.getElementById("programs").appendChild(row);
       }
       function compete() {
         k = [];
@@ -59,13 +97,13 @@
         kkk = "<thead><tr><td>left\\left score\\right</td>";
         for (let i = 0; i < programs.length; i++)
           kkk += `<td>${programs[i].name}</td>`;
-        kkk += "</tr></thead><tbody>";
+        kkk += "<td>Total Score</td></tr></thead><tbody>";
         for (let i = 0; i < programs.length; i++) {
           kkk += `<tr><td>${programs[i].name}</td>`;
           for (let j = 0; j < programs.length; j++) {
             kkk += `<td id="${i}_${j}"></td>`;
           }
-          kkk += "</tr>";
+          kkk += `<td id="${i}_total">-</td></tr>`;
         }
         restbl.innerHTML += kkk;
         for (let i = 0; i < programs.length; i++) {
@@ -79,6 +117,8 @@
         ra = [];
         rb = [];
         rc = [];
+        total_scores = [];
+        for (let i = 0; i < programs.length; i++) total_scores.push(0);
         while (k.length) {
           a = k.pop();
           b = k.pop();
@@ -114,10 +154,10 @@
               document.getElementById(`${e.data.j}_${e.data.i}`).innerHTML =
                 -e.data.score > 0 ? "+" + -e.data.score : -e.data.score;
               document.getElementById(
-                `${e.data.j}_${e.data.i}`
+                `${e.data.j}_${e.data.i}`,
               ).style.backgroundColor = getcolor(e.data.score);
               document.getElementById(
-                `${e.data.i}_${e.data.j}`
+                `${e.data.i}_${e.data.j}`,
               ).style.backgroundColor = getcolor(-e.data.score);
               results[`${e.data.i},${e.data.j}`] = [];
               for (let i = 10; i <= 30; i++) {
@@ -126,21 +166,38 @@
               for (let i = -10; i >= -30; i--) {
                 results[`${e.data.i},${e.data.j}`].push(e.data[i]);
               }
+              total_scores[e.data.i] += e.data.score;
+              total_scores[e.data.j] -= e.data.score;
+              document.getElementById(`${e.data.i}_total`).innerHTML =
+                total_scores[e.data.i] > 0
+                  ? "+" + total_scores[e.data.i]
+                  : total_scores[e.data.i];
+              document.getElementById(`${e.data.j}_total`).innerHTML =
+                total_scores[e.data.j] > 0
+                  ? "+" + total_scores[e.data.j]
+                  : total_scores[e.data.j];
+              document.getElementById(
+                `${e.data.i}_total`,
+              ).style.backgroundColor = getcolor(
+                -total_scores[e.data.i] / programs.length,
+              );
+              document.getElementById(
+                `${e.data.j}_total`,
+              ).style.backgroundColor = getcolor(
+                -total_scores[e.data.j] / programs.length,
+              );
               var xxx = e.data.i;
               var yyy = e.data.j;
               var eventf = function (e) {
-                document.getElementById(
-                  "vs"
-                ).innerText = `${programs[xxx].name} vs ${programs[yyy].name}`;
+                document.getElementById("vs").innerText =
+                  `${programs[xxx].name} vs ${programs[yyy].name}`;
                 for (let i = 0; i < 42; i++) {
                   if (results[`${xxx},${yyy}`][i].state == "X")
-                    document.getElementById(
-                      `state_${i}`
-                    ).innerText = `${programs[yyy].name} wins`;
+                    document.getElementById(`state_${i}`).innerText =
+                      `${programs[yyy].name} wins`;
                   else if (results[`${xxx},${yyy}`][i].state == "Y")
-                    document.getElementById(
-                      `state_${i}`
-                    ).innerText = `${programs[xxx].name} wins`;
+                    document.getElementById(`state_${i}`).innerText =
+                      `${programs[xxx].name} wins`;
                   else document.getElementById(`state_${i}`).innerText = "tie";
                   document.getElementById(`reason_${i}`).innerText =
                     results[`${xxx},${yyy}`][i].reason;
@@ -158,6 +215,92 @@
         wb.postMessage(rb);
         wc.postMessage(rc);
       }
+      function upload_programs() {
+        var input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json";
+        input.onchange = (e) => {
+          var file = e.target.files[0];
+          var reader = new FileReader();
+          reader.readAsText(file, "UTF-8");
+          reader.onload = (readerEvent) => {
+            var content = readerEvent.target.result;
+            try {
+              window.programs = JSON.parse(content);
+              document.getElementById("programs").innerHTML =
+                "Programs (Hover to view a program): ";
+              for (let i = 0; i < programs.length; i++) {
+                const row = document.createElement("div");
+                row.className = "program-row";
+                b = document.createElement("code");
+                b.innerText = programs[i].name;
+                var u = i;
+                b.addEventListener("mouseover", (e) => {
+                  document.getElementById("view").innerText = programs[u].prog;
+                });
+                btn = document.createElement("button");
+                btn.className = "clickable-text";
+                btn.innerHTML = "<code>Delete</code>";
+                row.className = "program-row";
+                btn.addEventListener("click", () => {
+                  programs.splice(u, 1);
+                  row.remove();
+                });
+                row.appendChild(b);
+                row.appendChild(btn);
+                document.getElementById("programs").appendChild(row);
+              }
+            } catch (e) {
+              alert("Invalid JSON file");
+            }
+          };
+        };
+        input.click();
+      }
+      function export_programs() {
+        var dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(programs));
+        var dlAnchorElem = document.createElement("a");
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute(
+          "download",
+          `programs${Math.floor(Math.random() * 1000000000)}.json`,
+        );
+        dlAnchorElem.click();
+      }
+      function tabletag2array(tag) {
+        var result = [];
+        for (let i of tag.children) {
+          for (let j of i.children) {
+            var result_row = [];
+            for (let k of j.children) {
+              result_row.push(k.innerText);
+            }
+            result.push(result_row);
+          }
+        }
+        return result;
+      }
+      function export_csv(chart) {
+        var result = "";
+        for (let i of chart) {
+          result += i.join(",") + "\n";
+        }
+        var dataStr =
+          "data:text/csv;charset=utf-8," + encodeURIComponent(result);
+        var dlAnchorElem = document.createElement("a");
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute(
+          "download",
+          `results${Math.floor(Math.random() * 1000000000)}.csv`,
+        );
+        dlAnchorElem.click();
+      }
+      function export_table(table_id) {
+        var table = document.getElementById(table_id);
+        export_csv(tabletag2array(table));
+      }
       function clear_programs() {
         window.programs = [];
         document.getElementById("programs").innerHTML =
@@ -167,10 +310,14 @@
     </script>
     <button onclick="add_program()">Add program</button>
     <button onclick="clear_programs()">Clear programs</button>
+    <button onclick="upload_programs()">Upload programs (JSON)</button>
+    <button onclick="export_programs()">Export programs (JSON)</button>
+    <button onclick="export_table('restbl')">Export results (CSV)</button>
     <button onclick="compete()">Compete!</button>
     <h3>Result (Hover to view details)</h3>
     <table id="restbl" border="1"></table>
     <h3>Details</h3>
+    <button onclick="export_table('detail')">Export (CSV)</button>
     <div id="vs"></div>
     <table id="detail" border="1">
       <thead>
@@ -435,7 +582,8 @@
           <td id="reason_41"></td>
         </tr>
       </tbody>
-      <tbody></tbody>
     </table>
+    <hr />
+    <a href="changelog.html">Change log</a>
   </body>
 </html>
