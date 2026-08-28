@@ -1,9 +1,10 @@
-function bfjoust(x, y, tapesize, switched) {
+function bfjoust(x, y, tapesize, switched, trace) {
   tape = [];
   for (let i = 0; i < tapesize; i++) tape.push(0);
   stack = [];
   mx = {};
   my = {};
+  trace_result = [];
   for (var i = 0; i < x.length; i++) {
     if (x[i] == "[") {
       stack.push(i);
@@ -50,6 +51,7 @@ function bfjoust(x, y, tapesize, switched) {
   for (let i = 0; i < 100000; i++) {
     curx = tape[px];
     cury = tape[py];
+    if(trace)trace_result.push([i,px,py,ipx,ipy].concat(tape));
     switch (x[ipx]) {
       case "+": {
         tape[px]++;
@@ -139,12 +141,12 @@ function bfjoust(x, y, tapesize, switched) {
       } else fy = 1;
     } else fy = 0;
     if (lx && ly) {
-      return { state: "T", reason: `left: ${rx}\tright: ${ry}` };
+      return { state: "T", reason: `left: ${rx}\tright: ${ry}`, trace: trace_result};
     } else if (lx) {
-      return { state: "X", reason: rx };
+      return { state: "X", reason: rx, trace: trace_result};
     } else if (ly) {
-      return { state: "Y", reason: ry };
+      return { state: "Y", reason: ry, trace: trace_result};
     }
   }
-  return { state: "T", reason: "timeout" };
+  return { state: "T", reason: "timeout", trace: trace_result};
 }

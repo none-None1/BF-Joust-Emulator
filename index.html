@@ -18,6 +18,23 @@
         cursor: pointer;
         font: inherit;
       }
+      .results-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 2rem;
+      }
+      .result-panel,
+      .details-panel {
+        min-width: 0;
+      }
+      .details-panel {
+        overflow-x: auto;
+      }
+      @media (max-width: 800px) {
+        .results-layout {
+          flex-direction: column;
+        }
+      }
     </style>
   </head>
   <body>
@@ -314,12 +331,16 @@
     <button onclick="export_programs()">Export programs (JSON)</button>
     <button onclick="export_table('restbl')">Export results (CSV)</button>
     <button onclick="compete()">Compete!</button>
-    <h3>Result (Hover to view details)</h3>
-    <table id="restbl" border="1"></table>
-    <h3>Details</h3>
-    <button onclick="export_table('detail')">Export (CSV)</button>
-    <div id="vs"></div>
-    <table id="detail" border="1">
+    <div class="results-layout">
+      <section class="result-panel">
+        <h3>Result (Hover to view details)</h3>
+        <table id="restbl" border="1"></table>
+      </section>
+      <section class="details-panel">
+        <h3>Details</h3>
+        <button onclick="export_table('detail')">Export (CSV)</button>
+        <div id="vs"></div>
+        <table id="detail" border="1">
       <thead>
         <tr>
           <td>Tape length</td>
@@ -582,7 +603,9 @@
           <td id="reason_41"></td>
         </tr>
       </tbody>
-    </table>
+        </table>
+      </section>
+    </div>
     <hr />
     <a href="changelog.html">Change log</a>
   </body>
