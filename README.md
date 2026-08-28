@@ -1,6 +1,6 @@
 # BF-Joust-Emulator
 
-[![2024-07-12-131234.png](https://i.postimg.cc/cJDJhBB1/2024-07-12-131234.png)](https://postimg.cc/R3H9VfY2)
+[![ping-mu-jie-tu-2026-08-28-194456.png](https://i.postimg.cc/ZKf3sghm/ping-mu-jie-tu-2026-08-28-194456.png)](https://postimg.cc/w7m77wv4)
 
 An emulator for [BF Joust](https://esolangs.org/wiki/BF_Joust)
 
