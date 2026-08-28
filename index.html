@@ -38,7 +38,7 @@
     </style>
   </head>
   <body>
-    <h1>BF Joust Emulator 1.1</h1>
+    <h1>BF Joust Emulator 1.2</h1>
     <p>
       This is a
       <a href="https://esolangs.org/wiki/BF_Joust">BF Joust</a> emulator, it
@@ -107,6 +107,10 @@
         document.getElementById("programs").appendChild(row);
       }
       function compete() {
+        if(programs.length < 2){
+          alert("At least 2 programs are required to compete");
+          return;
+        }
         k = [];
         window.results = {};
         restbl = document.getElementById("restbl");
@@ -196,12 +200,12 @@
               document.getElementById(
                 `${e.data.i}_total`,
               ).style.backgroundColor = getcolor(
-                -total_scores[e.data.i] / programs.length,
+                -total_scores[e.data.i] / (programs.length-1),
               );
               document.getElementById(
                 `${e.data.j}_total`,
               ).style.backgroundColor = getcolor(
-                -total_scores[e.data.j] / programs.length,
+                -total_scores[e.data.j] / (programs.length-1),
               );
               var xxx = e.data.i;
               var yyy = e.data.j;
@@ -251,7 +255,7 @@
                 row.className = "program-row";
                 b = document.createElement("code");
                 b.innerText = programs[i].name;
-                var u = i;
+                const u = i;
                 b.addEventListener("mouseover", (e) => {
                   document.getElementById("view").innerText = programs[u].prog;
                 });
@@ -323,6 +327,15 @@
         document.getElementById("programs").innerHTML =
           "Programs (Hover to view a program): ";
         document.getElementById("restbl").innerHTML = "";
+      }
+      function stop(){
+        try{
+          wa.terminate();
+          wb.terminate();
+          wc.terminate();
+        }catch(e){
+          alert("No competition is running");
+        }
       }
     </script>
     <button onclick="add_program()">Add program</button>
