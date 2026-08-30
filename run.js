@@ -141,11 +141,11 @@ function bfjoust(x, y, tapesize, switched, trace) {
       } else fy = 1;
     } else fy = 0;
     if (lx && ly) {
-      return { state: "T", reason: `left: ${rx}\tright: ${ry}`, trace: trace_result};
+      return { state: "T", reason: `left: ${rx}\tright: ${ry}`, trace: trace_result.concat([[i,px,py,ipx,ipy].concat(tape)]) };
     } else if (lx) {
-      return { state: "X", reason: rx, trace: trace_result};
+      return { state: "X", reason: rx, trace: trace_result.concat([[i,px,py,ipx,ipy].concat(tape)]) };
     } else if (ly) {
-      return { state: "Y", reason: ry, trace: trace_result};
+      return { state: "Y", reason: ry, trace: trace_result.concat([[i,px,py,ipx,ipy].concat(tape)]) };
     }
   }
   return { state: "T", reason: "timeout", trace: trace_result};

@@ -1,14 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Trace & Animation</title>
-    </head>
-    <body>
-        <h1>Trace & Animation</h1>
-        <p>This page is under construction.</p>
-        <script src="run.js"></script>
-        <table id="cells"></table>
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trace & Animation</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        td {
+            font-family: Consolas, Source Code Pro, Fira Code, DejaVu Sans Mono, Menlo, monospace;
+        }
+
+        #step {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+        }
+
+        #step_word {
+            display: inline;
+            margin: 0;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="run.js"></script>
+    <script src="parse.js"></script>
+    <h1>Trace & Animation</h1>
+    <p>Enter two Brainfuck programs below, and click "Run/Reset" to start the trace. You can then use the buttons to
+        step through the trace, or pause it. You can also adjust the delay between steps and the number of cells in the
+        tape.</p>
+    <hr />
+    <code id="status_bar"></code>
+    <table id="cells" border="1"></table>
+    <button onclick="init()" title="Load programs"><i class="fas fa-play"></i> Run/Reset</button>
+    <button onclick="next()" title="Next step"><i class="fas fa-forward"></i> Next</button>
+    <button onclick="previous()" title="Previous step"><i class="fas fa-backward"></i> Previous</button>
+    <button onclick="exportTrace()" title="Export trace"><i class="fas fa-download"></i> Export full trace info (JSON)</button>
+    <button onclick="create_permalink()" title="Creates a permanent link that can later be used to show the same trace"><i class="fas fa-link"></i> Create Permanent Link</button>
+    <button onclick="step()" id="step" title="Step through trace"><i class="fas fa-step-forward" id="step_icon"></i> <span id="step_word">Step</span></button>
+    <label for="delay">Delay (ms):</label>
+    <input id="delay" name="delay" type="number" min="1" max="1000" step="10" value="100" required>
+    <label for="cell_num">Cell count:</label>
+    <input id="cell_num" name="cell_num" type="number" min="10" max="30" step="1" value="10" required>
+    <input type="checkbox" id="switch" title="Switch polarity of one program">Switch polarity of one program</input>
+    <br>
+    <script>
+        var current = 0, initialized = false, cell_count = 10, left = "", right = "", trace = null, tid = null, running = false;
+        const cellNum = document.getElementById("cell_num");
+        cellNum.addEventListener("input", () => {
+            const value = parseInt(cellNum.value);
+            if (Number.isNaN(value)) {
+                cellNum.value = "10";
+            } else {
+                cellNum.value = String(Math.min(30, Math.max(10, value)));
+            }
+        });
+        const delay = document.getElementById("delay");
+        delay.addEventListener("input", () => {
+            const value = parseInt(delay.value);
+            if (Number.isNaN(value)) {
+                delay.value = "100";
+            } else {
+                delay.value = String(Math.min(1000, Math.max(0, value)));
+            }
+        });
+        function display() {
+            if (!window.initialized) {
+                init();
+            }
+            document.getElementById("status_bar").innerText = ``
+                + `Step: ${window.current + 1}/${window.trace.trace.length} | `
+                + `Left IP: ${window.trace.trace[window.current][3]} | `
+                + `Right IP: ${window.trace.trace[window.current][4]} | `
+                + `Left command: ${window.left[window.trace.trace[window.current][3]]?window.left[window.trace.trace[window.current][3]]:' '} | `
+                + `Right command: ${window.right[window.trace.trace[window.current][4]]?window.right[window.trace.trace[window.current][4]]:' '}`
+            for (let i = 0; i < window.trace.trace[window.current].length - 5; i++) {
+                let cell = document.getElementById("cell_" + i);
+                cell.innerText = window.trace.trace[window.current][i + 5].toString(16).padStart(2, '0').toUpperCase();
+                if (i == window.trace.trace[window.current][1] && i == window.trace.trace[window.current][2]) {
+                    cell.style.color = "purple";
+                }
+                else if (i == window.trace.trace[window.current][1]) {
+                    cell.style.color = "blue";
+                }
+                else if (i == window.trace.trace[window.current][2]) {
+                    cell.style.color = "red";
+                } else {
+                    cell.style.color = "black";
+                }
+            }
+        }
+        function init() {
+            window.initialized = true;
+            pause();
+            document.getElementById("step_icon").className = "fas fa-step-forward";
+            document.getElementById("step_word").innerText = "Step";
+            window.left = preproc(document.getElementById("left_program").value);
+            window.right = preproc(document.getElementById("right_program").value);
+            window.cell_count = parseInt(document.getElementById("cell_num").value);
+            var switch_polarity = document.getElementById("switch").checked;
+            window.trace = bfjoust(window.left, window.right, window.cell_count, switch_polarity, true);
+            window.current = 0;
+            document.getElementById("cells").innerHTML = "";
+            var tb = document.createElement("tbody");
+            var row = document.createElement("tr");
+            for (let i = 0; i < window.cell_count; i++) {
+                cell = document.createElement("td");
+                cell.id = "cell_" + i;
+                cell.innerText = window.trace.trace[0][i + 5].toString(16).padStart(2, '0').toUpperCase();
+                if (i == 0) {
+                    cell.style.backgroundColor = "lightblue";
+                    cell.style.color = "blue";
+                } else if (i == window.cell_count - 1) {
+                    cell.style.backgroundColor = "lightcoral";
+                    cell.style.color = "red";
+                } else {
+                    cell.style.backgroundColor = "lightgray";
+                    cell.style.color = "black";
+                }
+                row.appendChild(cell);
+            }
+            tb.appendChild(row);
+            document.getElementById("cells").appendChild(tb);
+            document.getElementById("status_bar").innerText = ``
+                + `Step: ${window.current + 1}/${window.trace.trace.length} | `
+                + `Left IP: ${window.trace.trace[window.current][3]} | `
+                + `Right IP: ${window.trace.trace[window.current][4]} | `
+                + `Left command: ${window.left[window.trace.trace[window.current][3]]?window.left[window.trace.trace[window.current][3]]:' '} | `
+                + `Right command: ${window.right[window.trace.trace[window.current][4]]?window.right[window.trace.trace[window.current][4]]:' '}`
+        }
+        function next() {
+            if (!window.initialized) {
+                init();
+            }
+            if (window.current < window.trace.trace.length - 1) {
+                window.current++;
+                display();
+            } else {
+                var result = "";
+                if (window.trace.state == "Y") {
+                    result = "Left program wins!";
+                } else if (window.trace.state == "X") {
+                    result = "Right program wins!";
+                } else {
+                    result = "Tie!";
+                }
+                alert("End of trace reached.\nResult: " + result + "\nReason: " + window.trace.reason);
+                if (window.tid !== null) {
+                    clearInterval(window.tid);
+                    window.tid = null;
+                }
+                window.running = false;
+                document.getElementById("step_icon").className = "fas fa-step-forward";
+                document.getElementById("step_word").innerText = "Step";
+            }
+        }
+        function previous() {
+            if (!window.initialized) {
+                init();
+            }
+            if (window.current > 0) {
+                window.current--;
+                display();
+            } else {
+                alert("Beginning of trace reached.");
+            }
+        }
+        function step() {
+            if (!window.initialized) {
+                init();
+            }
+            if (running) {
+                pause();
+                document.getElementById("step_icon").className = "fas fa-step-forward";
+                document.getElementById("step_word").innerText = "Step";
+            } else {
+                window.tid = setInterval(next, parseInt(document.getElementById("delay").value));
+                document.getElementById("step_icon").className = "fas fa-pause";
+                document.getElementById("step_word").innerText = "Pause";
+            }
+            running = !running;
+        }
+        function pause() {
+            if (!window.initialized) {
+                init();
+            }
+            if (window.tid !== null) {
+                clearInterval(window.tid);
+                window.tid = null;
+            }
+        }
+        function exportTrace() {
+            if (!window.initialized) {
+                init();
+            }
+            var fmt_trace=[];
+            for(let i of window.trace.trace){
+                fmt_trace.push({
+                    step: i[0],
+                    left_pointer: i[1],
+                    right_pointer: i[2],
+                    left_ip: i[3],
+                    right_ip: i[4],
+                    tape: i.slice(5)
+                });
+            }
+            var traceData = {
+                left: document.getElementById("left_program").value,
+                right: document.getElementById("right_program").value,
+                cell_count: document.getElementById("cell_num").value,
+                switch_polarity: document.getElementById("switch").checked,
+                trace: fmt_trace,
+                result: window.trace.state,
+                reason: window.trace.reason
+            };
+            var dataStr =
+            "data:text/json;charset=utf-8," +
+            encodeURIComponent(JSON.stringify(traceData, null, 2));
+            var dlAnchorElem = document.createElement("a");
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute(
+                "download",
+                `trace${Math.floor(Math.random() * 1000000000)}.json`,
+            );
+            dlAnchorElem.click();
+        }
+        function create_permalink(){
+            var urlname =
+            window.location.href.split("#")[0] +
+            "#" +
+            btoa(document.getElementById("left_program").value + "\x00" + document.getElementById("right_program").value + "\x00" + document.getElementById("cell_num").value + "\x00" + document.getElementById("switch").checked).replaceAll("=", "_").replaceAll("+", "@").replaceAll("/", "$");
+            var encoded=btoa(urlname).replaceAll("=", "_").replaceAll("+", "@").replaceAll("/", "$");
+            var link = document.createElement("a");
+            link.setAttribute("href", "link.html#" + encoded);
+            link.setAttribute("target", "_blank");
+            link.click();
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.location.hash.slice(1)) {
+                var decoded = atob(
+                    window.location.hash
+                        .slice(1)
+                        .replaceAll("_", "=")
+                        .replaceAll("@", "+")
+                        .replaceAll("$", "/"),
+                ).split("\x00");
+                document.getElementById("left_program").value = decoded[0];
+                document.getElementById("right_program").value = decoded[1];
+                document.getElementById("cell_num").value = decoded[2];
+                document.getElementById("switch").checked = (decoded[3] === "true");
+                init();
+            }
+        });
+    </script>
+    <textarea id="left_program" placeholder="Enter left program here..." cols="80" rows="30"></textarea>
+    <textarea id="right_program" placeholder="Enter right program here..." cols="80" rows="30"></textarea>
+    <hr/>
+    <a href="index.html">Back to main page</a>
+</body>
+
 </html>

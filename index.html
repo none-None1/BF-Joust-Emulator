@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>BF Joust Emulator</title>
+    <link rel="stylesheet" href="style.css">
     <style>
       .program-row {
         display: flex;
@@ -36,16 +37,18 @@
         }
       }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
-    <h1>BF Joust Emulator 1.2</h1>
+    <h1>BF Joust Emulator 1.3</h1>
     <p>
       This is a
       <a href="https://esolangs.org/wiki/BF_Joust">BF Joust</a> emulator, it
       allows you to try out BF Joust without uploading anything anywhere. Add
       several programs and program names, and click Compete. The emulator will
       show a table that shows the score of each match between the programs, from
-      +42 to -42. It doesn't have animations (yet).
+      +42 to -42. You can view <a href="trace.html">trace and animation</a> of a 
+      match by clicking on the details. You can also export the results to CSV format.
       <br />
       <strong>Note:</strong> Programs must strictly follow
       <a href="https://esolangs.org/wiki/BF_Joust#Latest_changes"
@@ -107,7 +110,7 @@
         document.getElementById("programs").appendChild(row);
       }
       function compete() {
-        if(programs.length < 2){
+        if (programs.length < 2) {
           alert("At least 2 programs are required to compete");
           return;
         }
@@ -200,12 +203,12 @@
               document.getElementById(
                 `${e.data.i}_total`,
               ).style.backgroundColor = getcolor(
-                -total_scores[e.data.i] / (programs.length-1),
+                -total_scores[e.data.i] / (programs.length - 1),
               );
               document.getElementById(
                 `${e.data.j}_total`,
               ).style.backgroundColor = getcolor(
-                -total_scores[e.data.j] / (programs.length-1),
+                -total_scores[e.data.j] / (programs.length - 1),
               );
               var xxx = e.data.i;
               var yyy = e.data.j;
@@ -213,13 +216,21 @@
                 document.getElementById("vs").innerText =
                   `${programs[xxx].name} vs ${programs[yyy].name}`;
                 for (let i = 0; i < 42; i++) {
+                  var cell_count=(i<21?10+i:10+(i-21));
+                  var switched=i<21?"false":"true";
+                  var url = `trace.html#${btoa(
+                    `${programs[xxx].prog}\x00${programs[yyy].prog}\x00${cell_count}\x00${switched}`,
+                  )
+                    .replaceAll("=", "_")
+                    .replaceAll("+", "@")
+                    .replaceAll("/", "$")}`;
                   if (results[`${xxx},${yyy}`][i].state == "X")
-                    document.getElementById(`state_${i}`).innerText =
-                      `${programs[yyy].name} wins`;
+                    document.getElementById(`state_${i}`).innerHTML =
+                      `<a href="${url}" target="_blank">${programs[yyy].name} wins</a>`;
                   else if (results[`${xxx},${yyy}`][i].state == "Y")
-                    document.getElementById(`state_${i}`).innerText =
-                      `${programs[xxx].name} wins`;
-                  else document.getElementById(`state_${i}`).innerText = "tie";
+                    document.getElementById(`state_${i}`).innerHTML =
+                      `<a href="${url}" target="_blank">${programs[xxx].name} wins</a>`;
+                  else document.getElementById(`state_${i}`).innerHTML = `<a href="${url}" target="_blank">tie</a>`;
                   document.getElementById(`reason_${i}`).innerText =
                     results[`${xxx},${yyy}`][i].reason;
                 }
@@ -328,23 +339,23 @@
           "Programs (Hover to view a program): ";
         document.getElementById("restbl").innerHTML = "";
       }
-      function stop(){
-        try{
+      function stop() {
+        try {
           wa.terminate();
           wb.terminate();
           wc.terminate();
-        }catch(e){
+        } catch (e) {
           alert("No competition is running");
         }
       }
     </script>
-    <button onclick="add_program()">Add program</button>
-    <button onclick="clear_programs()">Clear programs</button>
-    <button onclick="upload_programs()">Upload programs (JSON)</button>
-    <button onclick="export_programs()">Export programs (JSON)</button>
-    <button onclick="export_table('restbl')">Export results (CSV)</button>
-    <button onclick="compete()">Compete!</button>
-    <button onclick="stop()">Stop</button>
+    <button onclick="add_program()"><i class="fas fa-plus"></i> Add program</button>
+    <button onclick="clear_programs()"><i class="fas fa-trash"></i> Clear programs</button>
+    <button onclick="upload_programs()"><i class="fas fa-upload"></i> Upload programs (JSON)</button>
+    <button onclick="export_programs()"><i class="fas fa-download"></i> Export programs (JSON)</button>
+    <button onclick="export_table('restbl')"><i class="fas fa-download"></i> Export results (CSV)</button>
+    <button onclick="compete()"><i class="fas fa-play"></i> Compete!</button>
+    <button onclick="stop()"><i class="fas fa-stop"></i> Stop</button>
     <div class="results-layout">
       <section class="result-panel">
         <h3>Result (Hover to view details)</h3>
@@ -352,271 +363,271 @@
       </section>
       <section class="details-panel">
         <h3>Details</h3>
-        <button onclick="export_table('detail')">Export (CSV)</button>
+        <button onclick="export_table('detail')"><i class="fas fa-download"></i> Export (CSV)</button>
         <div id="vs"></div>
         <table id="detail" border="1">
-      <thead>
-        <tr>
-          <td>Tape length</td>
-          <td>Switched</td>
-          <td>Result</td>
-          <td>Reason</td>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>10</td>
-          <td>No</td>
-          <td id="state_0"></td>
-          <td id="reason_0"></td>
-        </tr>
-        <tr>
-          <td>11</td>
-          <td>No</td>
-          <td id="state_1"></td>
-          <td id="reason_1"></td>
-        </tr>
-        <tr>
-          <td>12</td>
-          <td>No</td>
-          <td id="state_2"></td>
-          <td id="reason_2"></td>
-        </tr>
-        <tr>
-          <td>13</td>
-          <td>No</td>
-          <td id="state_3"></td>
-          <td id="reason_3"></td>
-        </tr>
-        <tr>
-          <td>14</td>
-          <td>No</td>
-          <td id="state_4"></td>
-          <td id="reason_4"></td>
-        </tr>
-        <tr>
-          <td>15</td>
-          <td>No</td>
-          <td id="state_5"></td>
-          <td id="reason_5"></td>
-        </tr>
-        <tr>
-          <td>16</td>
-          <td>No</td>
-          <td id="state_6"></td>
-          <td id="reason_6"></td>
-        </tr>
-        <tr>
-          <td>17</td>
-          <td>No</td>
-          <td id="state_7"></td>
-          <td id="reason_7"></td>
-        </tr>
-        <tr>
-          <td>18</td>
-          <td>No</td>
-          <td id="state_8"></td>
-          <td id="reason_8"></td>
-        </tr>
-        <tr>
-          <td>19</td>
-          <td>No</td>
-          <td id="state_9"></td>
-          <td id="reason_9"></td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td>No</td>
-          <td id="state_10"></td>
-          <td id="reason_10"></td>
-        </tr>
-        <tr>
-          <td>21</td>
-          <td>No</td>
-          <td id="state_11"></td>
-          <td id="reason_11"></td>
-        </tr>
-        <tr>
-          <td>22</td>
-          <td>No</td>
-          <td id="state_12"></td>
-          <td id="reason_12"></td>
-        </tr>
-        <tr>
-          <td>23</td>
-          <td>No</td>
-          <td id="state_13"></td>
-          <td id="reason_13"></td>
-        </tr>
-        <tr>
-          <td>24</td>
-          <td>No</td>
-          <td id="state_14"></td>
-          <td id="reason_14"></td>
-        </tr>
-        <tr>
-          <td>25</td>
-          <td>No</td>
-          <td id="state_15"></td>
-          <td id="reason_15"></td>
-        </tr>
-        <tr>
-          <td>26</td>
-          <td>No</td>
-          <td id="state_16"></td>
-          <td id="reason_16"></td>
-        </tr>
-        <tr>
-          <td>27</td>
-          <td>No</td>
-          <td id="state_17"></td>
-          <td id="reason_17"></td>
-        </tr>
-        <tr>
-          <td>28</td>
-          <td>No</td>
-          <td id="state_18"></td>
-          <td id="reason_18"></td>
-        </tr>
-        <tr>
-          <td>29</td>
-          <td>No</td>
-          <td id="state_19"></td>
-          <td id="reason_19"></td>
-        </tr>
-        <tr>
-          <td>30</td>
-          <td>No</td>
-          <td id="state_20"></td>
-          <td id="reason_20"></td>
-        </tr>
-        <tr>
-          <td>10</td>
-          <td>Yes</td>
-          <td id="state_21"></td>
-          <td id="reason_21"></td>
-        </tr>
-        <tr>
-          <td>11</td>
-          <td>Yes</td>
-          <td id="state_22"></td>
-          <td id="reason_22"></td>
-        </tr>
-        <tr>
-          <td>12</td>
-          <td>Yes</td>
-          <td id="state_23"></td>
-          <td id="reason_23"></td>
-        </tr>
-        <tr>
-          <td>13</td>
-          <td>Yes</td>
-          <td id="state_24"></td>
-          <td id="reason_24"></td>
-        </tr>
-        <tr>
-          <td>14</td>
-          <td>Yes</td>
-          <td id="state_25"></td>
-          <td id="reason_25"></td>
-        </tr>
-        <tr>
-          <td>15</td>
-          <td>Yes</td>
-          <td id="state_26"></td>
-          <td id="reason_26"></td>
-        </tr>
-        <tr>
-          <td>16</td>
-          <td>Yes</td>
-          <td id="state_27"></td>
-          <td id="reason_27"></td>
-        </tr>
-        <tr>
-          <td>17</td>
-          <td>Yes</td>
-          <td id="state_28"></td>
-          <td id="reason_28"></td>
-        </tr>
-        <tr>
-          <td>18</td>
-          <td>Yes</td>
-          <td id="state_29"></td>
-          <td id="reason_29"></td>
-        </tr>
-        <tr>
-          <td>19</td>
-          <td>Yes</td>
-          <td id="state_30"></td>
-          <td id="reason_30"></td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td>Yes</td>
-          <td id="state_31"></td>
-          <td id="reason_31"></td>
-        </tr>
-        <tr>
-          <td>21</td>
-          <td>Yes</td>
-          <td id="state_32"></td>
-          <td id="reason_32"></td>
-        </tr>
-        <tr>
-          <td>22</td>
-          <td>Yes</td>
-          <td id="state_33"></td>
-          <td id="reason_33"></td>
-        </tr>
-        <tr>
-          <td>23</td>
-          <td>Yes</td>
-          <td id="state_34"></td>
-          <td id="reason_34"></td>
-        </tr>
-        <tr>
-          <td>24</td>
-          <td>Yes</td>
-          <td id="state_35"></td>
-          <td id="reason_35"></td>
-        </tr>
-        <tr>
-          <td>25</td>
-          <td>Yes</td>
-          <td id="state_36"></td>
-          <td id="reason_36"></td>
-        </tr>
-        <tr>
-          <td>26</td>
-          <td>Yes</td>
-          <td id="state_37"></td>
-          <td id="reason_37"></td>
-        </tr>
-        <tr>
-          <td>27</td>
-          <td>Yes</td>
-          <td id="state_38"></td>
-          <td id="reason_38"></td>
-        </tr>
-        <tr>
-          <td>28</td>
-          <td>Yes</td>
-          <td id="state_39"></td>
-          <td id="reason_39"></td>
-        </tr>
-        <tr>
-          <td>29</td>
-          <td>Yes</td>
-          <td id="state_40"></td>
-          <td id="reason_40"></td>
-        </tr>
-        <tr>
-          <td>30</td>
-          <td>Yes</td>
-          <td id="state_41"></td>
-          <td id="reason_41"></td>
-        </tr>
-      </tbody>
+          <thead>
+            <tr>
+              <td>Tape length</td>
+              <td>Switched</td>
+              <td>Result</td>
+              <td>Reason</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>10</td>
+              <td>No</td>
+              <td id="state_0"></td>
+              <td id="reason_0"></td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td>No</td>
+              <td id="state_1"></td>
+              <td id="reason_1"></td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td>No</td>
+              <td id="state_2"></td>
+              <td id="reason_2"></td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td>No</td>
+              <td id="state_3"></td>
+              <td id="reason_3"></td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td>No</td>
+              <td id="state_4"></td>
+              <td id="reason_4"></td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td>No</td>
+              <td id="state_5"></td>
+              <td id="reason_5"></td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td>No</td>
+              <td id="state_6"></td>
+              <td id="reason_6"></td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td>No</td>
+              <td id="state_7"></td>
+              <td id="reason_7"></td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td>No</td>
+              <td id="state_8"></td>
+              <td id="reason_8"></td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td>No</td>
+              <td id="state_9"></td>
+              <td id="reason_9"></td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td>No</td>
+              <td id="state_10"></td>
+              <td id="reason_10"></td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td>No</td>
+              <td id="state_11"></td>
+              <td id="reason_11"></td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td>No</td>
+              <td id="state_12"></td>
+              <td id="reason_12"></td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td>No</td>
+              <td id="state_13"></td>
+              <td id="reason_13"></td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td>No</td>
+              <td id="state_14"></td>
+              <td id="reason_14"></td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td>No</td>
+              <td id="state_15"></td>
+              <td id="reason_15"></td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td>No</td>
+              <td id="state_16"></td>
+              <td id="reason_16"></td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td>No</td>
+              <td id="state_17"></td>
+              <td id="reason_17"></td>
+            </tr>
+            <tr>
+              <td>28</td>
+              <td>No</td>
+              <td id="state_18"></td>
+              <td id="reason_18"></td>
+            </tr>
+            <tr>
+              <td>29</td>
+              <td>No</td>
+              <td id="state_19"></td>
+              <td id="reason_19"></td>
+            </tr>
+            <tr>
+              <td>30</td>
+              <td>No</td>
+              <td id="state_20"></td>
+              <td id="reason_20"></td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td>Yes</td>
+              <td id="state_21"></td>
+              <td id="reason_21"></td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td>Yes</td>
+              <td id="state_22"></td>
+              <td id="reason_22"></td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td>Yes</td>
+              <td id="state_23"></td>
+              <td id="reason_23"></td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td>Yes</td>
+              <td id="state_24"></td>
+              <td id="reason_24"></td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td>Yes</td>
+              <td id="state_25"></td>
+              <td id="reason_25"></td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td>Yes</td>
+              <td id="state_26"></td>
+              <td id="reason_26"></td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td>Yes</td>
+              <td id="state_27"></td>
+              <td id="reason_27"></td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td>Yes</td>
+              <td id="state_28"></td>
+              <td id="reason_28"></td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td>Yes</td>
+              <td id="state_29"></td>
+              <td id="reason_29"></td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td>Yes</td>
+              <td id="state_30"></td>
+              <td id="reason_30"></td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td>Yes</td>
+              <td id="state_31"></td>
+              <td id="reason_31"></td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td>Yes</td>
+              <td id="state_32"></td>
+              <td id="reason_32"></td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td>Yes</td>
+              <td id="state_33"></td>
+              <td id="reason_33"></td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td>Yes</td>
+              <td id="state_34"></td>
+              <td id="reason_34"></td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td>Yes</td>
+              <td id="state_35"></td>
+              <td id="reason_35"></td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td>Yes</td>
+              <td id="state_36"></td>
+              <td id="reason_36"></td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td>Yes</td>
+              <td id="state_37"></td>
+              <td id="reason_37"></td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td>Yes</td>
+              <td id="state_38"></td>
+              <td id="reason_38"></td>
+            </tr>
+            <tr>
+              <td>28</td>
+              <td>Yes</td>
+              <td id="state_39"></td>
+              <td id="reason_39"></td>
+            </tr>
+            <tr>
+              <td>29</td>
+              <td>Yes</td>
+              <td id="state_40"></td>
+              <td id="reason_40"></td>
+            </tr>
+            <tr>
+              <td>30</td>
+              <td>Yes</td>
+              <td id="state_41"></td>
+              <td id="reason_41"></td>
+            </tr>
+          </tbody>
         </table>
       </section>
     </div>

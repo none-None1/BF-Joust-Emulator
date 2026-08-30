@@ -84,3 +84,19 @@ function reduce(x){
     temp.pop();
     while(temp.length){x.fafa.push(temp.pop())}
 }
+function preproc(x) {
+  t = parsetree(x);
+  while (1) {
+    u = walk(t);
+    if (u.num != u.num) break;
+    reduce(u);
+  }
+  t = t.join("");
+  r = "";
+  for (let i of t) {
+    if ("+-.<>[]".includes(i)) {
+      r += i;
+    }
+  }
+  return r;
+}
