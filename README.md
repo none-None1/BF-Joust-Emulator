@@ -9,4 +9,5 @@ Add some programs (they are not uploaded anywhere) and just click compete.
 Hover on a grid in a result table to see details.
 
 ## Bugs
-* ~~Expands all the code, so it runs slow on large programs.~~ Uses juiced (by esolang user ais523) to run the code, which is much faster.
+* ~~Expands all the code, so it runs slow on large programs.~~ Uses a modification of [juiced](http://nethack4.org/esolangs/juiced.c) (by esolang user ais523) to run the code, which is much faster.
+
