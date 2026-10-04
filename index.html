@@ -228,13 +228,13 @@
                     .replaceAll("=", "_")
                     .replaceAll("+", "@")
                     .replaceAll("/", "$")}`;
-                  if (results[`${xxx},${yyy}`][i].state == "X")
-                    document.getElementById(`state_${i}`).innerHTML =
+                  if (results[`${xxx},${yyy}`][i].result == "X")
+                    document.getElementById(`result_${i}`).innerHTML =
                       `<a href="${url}" target="_blank">${programs[yyy].name} wins</a>`;
-                  else if (results[`${xxx},${yyy}`][i].state == "Y")
-                    document.getElementById(`state_${i}`).innerHTML =
+                  else if (results[`${xxx},${yyy}`][i].result == "Y")
+                    document.getElementById(`result_${i}`).innerHTML =
                       `<a href="${url}" target="_blank">${programs[xxx].name} wins</a>`;
-                  else document.getElementById(`state_${i}`).innerHTML = `<a href="${url}" target="_blank">tie</a>`;
+                  else document.getElementById(`result_${i}`).innerHTML = `<a href="${url}" target="_blank">tie</a>`;
                   document.getElementById(`reason_${i}`).innerText =
                     results[`${xxx},${yyy}`][i].reason;
                 }
@@ -382,253 +382,253 @@
             <tr>
               <td>10</td>
               <td>No</td>
-              <td id="state_0"></td>
+              <td id="result_0"></td>
               <td id="reason_0"></td>
             </tr>
             <tr>
               <td>11</td>
               <td>No</td>
-              <td id="state_1"></td>
+              <td id="result_1"></td>
               <td id="reason_1"></td>
             </tr>
             <tr>
               <td>12</td>
               <td>No</td>
-              <td id="state_2"></td>
+              <td id="result_2"></td>
               <td id="reason_2"></td>
             </tr>
             <tr>
               <td>13</td>
               <td>No</td>
-              <td id="state_3"></td>
+              <td id="result_3"></td>
               <td id="reason_3"></td>
             </tr>
             <tr>
               <td>14</td>
               <td>No</td>
-              <td id="state_4"></td>
+              <td id="result_4"></td>
               <td id="reason_4"></td>
             </tr>
             <tr>
               <td>15</td>
               <td>No</td>
-              <td id="state_5"></td>
+              <td id="result_5"></td>
               <td id="reason_5"></td>
             </tr>
             <tr>
               <td>16</td>
               <td>No</td>
-              <td id="state_6"></td>
+              <td id="result_6"></td>
               <td id="reason_6"></td>
             </tr>
             <tr>
               <td>17</td>
               <td>No</td>
-              <td id="state_7"></td>
+              <td id="result_7"></td>
               <td id="reason_7"></td>
             </tr>
             <tr>
               <td>18</td>
               <td>No</td>
-              <td id="state_8"></td>
+              <td id="result_8"></td>
               <td id="reason_8"></td>
             </tr>
             <tr>
               <td>19</td>
               <td>No</td>
-              <td id="state_9"></td>
+              <td id="result_9"></td>
               <td id="reason_9"></td>
             </tr>
             <tr>
               <td>20</td>
               <td>No</td>
-              <td id="state_10"></td>
+              <td id="result_10"></td>
               <td id="reason_10"></td>
             </tr>
             <tr>
               <td>21</td>
               <td>No</td>
-              <td id="state_11"></td>
+              <td id="result_11"></td>
               <td id="reason_11"></td>
             </tr>
             <tr>
               <td>22</td>
               <td>No</td>
-              <td id="state_12"></td>
+              <td id="result_12"></td>
               <td id="reason_12"></td>
             </tr>
             <tr>
               <td>23</td>
               <td>No</td>
-              <td id="state_13"></td>
+              <td id="result_13"></td>
               <td id="reason_13"></td>
             </tr>
             <tr>
               <td>24</td>
               <td>No</td>
-              <td id="state_14"></td>
+              <td id="result_14"></td>
               <td id="reason_14"></td>
             </tr>
             <tr>
               <td>25</td>
               <td>No</td>
-              <td id="state_15"></td>
+              <td id="result_15"></td>
               <td id="reason_15"></td>
             </tr>
             <tr>
               <td>26</td>
               <td>No</td>
-              <td id="state_16"></td>
+              <td id="result_16"></td>
               <td id="reason_16"></td>
             </tr>
             <tr>
               <td>27</td>
               <td>No</td>
-              <td id="state_17"></td>
+              <td id="result_17"></td>
               <td id="reason_17"></td>
             </tr>
             <tr>
               <td>28</td>
               <td>No</td>
-              <td id="state_18"></td>
+              <td id="result_18"></td>
               <td id="reason_18"></td>
             </tr>
             <tr>
               <td>29</td>
               <td>No</td>
-              <td id="state_19"></td>
+              <td id="result_19"></td>
               <td id="reason_19"></td>
             </tr>
             <tr>
               <td>30</td>
               <td>No</td>
-              <td id="state_20"></td>
+              <td id="result_20"></td>
               <td id="reason_20"></td>
             </tr>
             <tr>
               <td>10</td>
               <td>Yes</td>
-              <td id="state_21"></td>
+              <td id="result_21"></td>
               <td id="reason_21"></td>
             </tr>
             <tr>
               <td>11</td>
               <td>Yes</td>
-              <td id="state_22"></td>
+              <td id="result_22"></td>
               <td id="reason_22"></td>
             </tr>
             <tr>
               <td>12</td>
               <td>Yes</td>
-              <td id="state_23"></td>
+              <td id="result_23"></td>
               <td id="reason_23"></td>
             </tr>
             <tr>
               <td>13</td>
               <td>Yes</td>
-              <td id="state_24"></td>
+              <td id="result_24"></td>
               <td id="reason_24"></td>
             </tr>
             <tr>
               <td>14</td>
               <td>Yes</td>
-              <td id="state_25"></td>
+              <td id="result_25"></td>
               <td id="reason_25"></td>
             </tr>
             <tr>
               <td>15</td>
               <td>Yes</td>
-              <td id="state_26"></td>
+              <td id="result_26"></td>
               <td id="reason_26"></td>
             </tr>
             <tr>
               <td>16</td>
               <td>Yes</td>
-              <td id="state_27"></td>
+              <td id="result_27"></td>
               <td id="reason_27"></td>
             </tr>
             <tr>
               <td>17</td>
               <td>Yes</td>
-              <td id="state_28"></td>
+              <td id="result_28"></td>
               <td id="reason_28"></td>
             </tr>
             <tr>
               <td>18</td>
               <td>Yes</td>
-              <td id="state_29"></td>
+              <td id="result_29"></td>
               <td id="reason_29"></td>
             </tr>
             <tr>
               <td>19</td>
               <td>Yes</td>
-              <td id="state_30"></td>
+              <td id="result_30"></td>
               <td id="reason_30"></td>
             </tr>
             <tr>
               <td>20</td>
               <td>Yes</td>
-              <td id="state_31"></td>
+              <td id="result_31"></td>
               <td id="reason_31"></td>
             </tr>
             <tr>
               <td>21</td>
               <td>Yes</td>
-              <td id="state_32"></td>
+              <td id="result_32"></td>
               <td id="reason_32"></td>
             </tr>
             <tr>
               <td>22</td>
               <td>Yes</td>
-              <td id="state_33"></td>
+              <td id="result_33"></td>
               <td id="reason_33"></td>
             </tr>
             <tr>
               <td>23</td>
               <td>Yes</td>
-              <td id="state_34"></td>
+              <td id="result_34"></td>
               <td id="reason_34"></td>
             </tr>
             <tr>
               <td>24</td>
               <td>Yes</td>
-              <td id="state_35"></td>
+              <td id="result_35"></td>
               <td id="reason_35"></td>
             </tr>
             <tr>
               <td>25</td>
               <td>Yes</td>
-              <td id="state_36"></td>
+              <td id="result_36"></td>
               <td id="reason_36"></td>
             </tr>
             <tr>
               <td>26</td>
               <td>Yes</td>
-              <td id="state_37"></td>
+              <td id="result_37"></td>
               <td id="reason_37"></td>
             </tr>
             <tr>
               <td>27</td>
               <td>Yes</td>
-              <td id="state_38"></td>
+              <td id="result_38"></td>
               <td id="reason_38"></td>
             </tr>
             <tr>
               <td>28</td>
               <td>Yes</td>
-              <td id="state_39"></td>
+              <td id="result_39"></td>
               <td id="reason_39"></td>
             </tr>
             <tr>
               <td>29</td>
               <td>Yes</td>
-              <td id="state_40"></td>
+              <td id="result_40"></td>
               <td id="reason_40"></td>
             </tr>
             <tr>
               <td>30</td>
               <td>Yes</td>
-              <td id="state_41"></td>
+              <td id="result_41"></td>
               <td id="reason_41"></td>
             </tr>
           </tbody>
