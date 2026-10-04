@@ -87,6 +87,10 @@
             return;
           }
         }
+        if(!document.getElementById("name").value){
+          alert("Program name cannot be empty");
+          return;
+        }
         name = document.getElementById("name").value;
         prog = document.getElementById("code").value;
         programs.push({ name: name, prog: prog });

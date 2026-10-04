@@ -9,11 +9,11 @@ self.onmessage = async function (event) {
   if (request.type === "trace") {
     try {
       const result = bfjoust(
-        preproc(request.left),
-        preproc(request.right),
+        request.left,
+        request.right,
         request.cellCount,
         request.switched,
-        true,
+        1
       );
       const frameSize = request.cellCount + 5;
       const frameCount = result.trace.size();
