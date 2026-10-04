@@ -52,13 +52,13 @@ self.onmessage = async function (event) {
     const right = match.y;
     for (let i = 10; i <= 30; i++) {
       result[i] = bfjoust(left, right, i, 0, false);
-      if (result[i].state === "X") score--;
-      if (result[i].state === "Y") score++;
+      if (result[i].result === "X") score--;
+      if (result[i].result === "Y") score++;
     }
     for (let i = 10; i <= 30; i++) {
       result[-i] = bfjoust(left, right, i, 1, false);
-      if (result[-i].state === "X") score--;
-      if (result[-i].state === "Y") score++;
+      if (result[-i].result === "X") score--;
+      if (result[-i].result === "Y") score++;
     }
     result.score = score;
     self.postMessage(result);
