@@ -1,5 +1,4 @@
 importScripts("./juiced_mod.js");
-importScripts("./parse.js");
 const juicedReady = createJuiced();
 
 self.onmessage = async function (event) {
@@ -49,8 +48,8 @@ self.onmessage = async function (event) {
   for (const match of request) {
     const result = { i: match.i, j: match.j, stop: count === request.length - 1 };
     let score = 0;
-    const left = preproc(match.x);
-    const right = preproc(match.y);
+    const left = match.x;
+    const right = match.y;
     for (let i = 10; i <= 30; i++) {
       result[i] = bfjoust(left, right, i, 0, false);
       if (result[i].state === "X") score--;
