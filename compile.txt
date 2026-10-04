@@ -1,0 +1,1 @@
+emcc juiced_mod.cpp -o juiced_mod.js --bind -s MODULARIZE=1 -s EXPORT_NAME="createJuiced" -sALLOW_MEMORY_GROWTH -sINITIAL_MEMORY=67108864 -s STACK_SIZE=16777216
