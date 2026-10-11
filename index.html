@@ -40,7 +40,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
-    <h1>BF Joust Emulator 2.0</h1>
+    <h1>BF Joust Emulator 2.1</h1>
     <p>
       This is a
       <a href="https://esolangs.org/wiki/BF_Joust">BF Joust</a> emulator, it
@@ -49,17 +49,9 @@
       show a table that shows the score of each match between the programs, from
       +42 to -42. You can view <a href="trace.html">trace and animation</a> of a 
       match by clicking on the details. You can also export the results to CSV format.
-      <br />
-      <strong>Note:</strong> Programs must strictly follow
-      <a href="https://esolangs.org/wiki/BF_Joust#Latest_changes"
-        >the latest BF Joust expanding rules</a
-      >, otherwise the results may be incorrect. The emulator will not check for
-      this.
     </p>
     <hr />
-    <div id="programs">Programs (Hover to view a program):</div>
-    <hr />
-    <code id="view"></code>
+    <div id="programs">Programs:</div>
     <hr />
     Program name: <input id="name" />
     <hr />
@@ -78,6 +70,13 @@
         if (red < green) return `rgb(${Math.floor((255 * red) / green)},255,0)`;
         return `rgb(255,${Math.floor((255 * green) / red)},0)`;
       }
+      document.getElementById("code").addEventListener("keyup", function (e) {
+        for (let i of programs){
+          if(i.name == document.getElementById("name").value){
+            i.prog = document.getElementById("code").value;
+          }
+        }
+      });
       function add_program() {
         for (let i of programs) {
           if (i.name == document.getElementById("name").value) {
@@ -97,20 +96,37 @@
         b = document.createElement("code");
         b.innerText = name;
         var u = programs.length - 1;
-        b.addEventListener("mouseover", (e) => {
-          document.getElementById("view").innerText = programs[u].prog;
+        btn_view = document.createElement("button");
+        btn_view.className = "clickable-text";
+        btn_view.innerHTML = "<code>View &amp; Edit</code>";
+        btn_view.addEventListener("click", () => {
+          var flag=false;
+          for(let i of programs){
+            if(i.name == document.getElementById("name").value){
+              i.prog = document.getElementById("code").value;
+              flag=true;
+            }
+          }
+          if(!flag){
+            if(!confirm(`The program you're editing will be discarded (You can click "Add Program" to delete it), and the program ${programs[u].name} will be loaded into the code box. Do you want to continue?`)){
+              return;
+            }
+          }
+          document.getElementById("name").value = programs[u].name;
+          document.getElementById("code").value = programs[u].prog;
         });
-        btn = document.createElement("button");
-        btn.className = "clickable-text";
-        btn.innerHTML = "<code>Delete</code>";
-        btn.addEventListener("click", () => {
+        btn_delete = document.createElement("button");
+        btn_delete.className = "clickable-text";
+        btn_delete.innerHTML = "<code>Delete</code>";
+        btn_delete.addEventListener("click", () => {
           programs.splice(u, 1);
           row.remove();
         });
         const row = document.createElement("div");
         row.className = "program-row";
         row.appendChild(b);
-        row.appendChild(btn);
+        row.appendChild(btn_view);
+        row.appendChild(btn_delete);
         document.getElementById("programs").appendChild(row);
       }
       function compete() {
@@ -264,7 +280,7 @@
             try {
               window.programs = JSON.parse(content);
               document.getElementById("programs").innerHTML =
-                "Programs (Hover to view a program): ";
+                "Programs: ";
               for (let i = 0; i < programs.length; i++) {
                 const row = document.createElement("div");
                 row.className = "program-row";
@@ -340,7 +356,7 @@
       function clear_programs() {
         window.programs = [];
         document.getElementById("programs").innerHTML =
-          "Programs (Hover to view a program): ";
+          "Programs: ";
         document.getElementById("restbl").innerHTML = "";
       }
       function stop() {
